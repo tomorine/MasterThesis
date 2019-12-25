@@ -1,0 +1,16 @@
+.model XNOR
+.input a b
+.output f
+.names a n1
+NOT
+.names b n2
+NOT
+.names a n2 a1
+AND
+.names b n1 a2
+AND
+.names a1 a2 a3
+OR
+.names a3 f
+NOT
+.end

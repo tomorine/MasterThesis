@@ -1,0 +1,135 @@
+circuit name: none
+primary input list
+--------------------
+a:0 b:1 c:2 
+
+int node list
+--------------------
+node name:a1 node id:4 
+gatetype : NOT
+input : a:0 
+output : g2:8 
+
+node name:b1 node id:5 
+gatetype : NOT
+input : b:1 
+output : g1:7 g2:8 
+
+node name:c1 node id:6 
+gatetype : NOT
+input : c:2 
+output : g4:12 
+
+node name:g1 node id:7 
+gatetype : AND
+input : a:0 b1:5 
+output : m:9 
+
+node name:g2 node id:8 
+gatetype : AND
+input : a1:4 b1:5 
+output : m:9 
+
+node name:m node id:9 
+gatetype : OR
+input : g1:7 g2:8 
+output : m1:10 g4:12 
+
+node name:m1 node id:10 
+gatetype : NOT
+input : m:9 
+output : g3:11 
+
+node name:g3 node id:11 
+gatetype : AND
+input : c:2 m1:10 
+output : node_to_f:13 
+
+node name:g4 node id:12 
+gatetype : AND
+input : c1:6 m:9 
+output : node_to_f:13 
+
+node name:node_to_f node id:13 
+gatetype : OR
+input : g3:11 g4:12 
+output : f:3 
+
+primary output list
+--------------------
+f:3 
+
+z3ちゃんは考え中です
+oprater
+ [*]  [11]  [*]  [*]  [*] 
+ [*]  [13]  [3]  [*]  [2] 
+ [10]  [12]  [6]  [*]  [*] 
+ [*]  [9]  [7]  [*]  [*] 
+ [*]  [8]  [5]  [1]  [0] 
+ [4]  [*]  [*]  [*]  [*] 
+
+wire
+ [10:11]  [*:*]  [2:11]  [2:11]  [2:11] 
+ [10:11]  [*:*]  [*:*]  [*:*]  [*:*] 
+ [*:*]  [*:*]  [*:*]  [2:6]  [2:6] 
+ [9:10]  [*:*]  [*:*]  [0:7]  [0:7] 
+ [4:8]  [*:*]  [*:*]  [*:*]  [*:*] 
+ [*:*]  [0:4]  [0:4]  [0:4]  [0:4] 
+
+connect
+[ ]>[ ]<[ ]<[ ]<[ ]
+ A   V           A  
+[ ] [ ]>[ ] [ ] [ ]
+ A   A           V  
+[ ] [ ]<[ ]<[ ]<[ ]
+ A   A              
+[ ]<[ ]<[ ]<[ ]<[ ]
+     A   A       A  
+[ ]>[ ]<[ ]<[ ] [ ]
+ A               V  
+[ ]<[ ]<[ ]<[ ]<[ ]
+                    
+
+clock_zone
+ [1]  [2]  [1]  [4]  [3] 
+ [4]  [3]  [4]  [1]  [2] 
+ [3]  [2]  [1]  [4]  [3] 
+ [2]  [1]  [4]  [3]  [2] 
+ [3]  [4]  [3]  [2]  [1] 
+ [2]  [1]  [4]  [3]  [2] 
+
+
+connnect list
+connect[0][0][1][0]
+connect[0][1][0][0]
+connect[0][2][0][1]
+connect[0][3][0][2]
+connect[0][4][1][4]
+connect[0][5][0][4]
+connect[1][0][1][1]
+connect[1][1][2][1]
+connect[1][2][1][1]
+connect[1][3][0][3]
+connect[1][3][1][2]
+connect[1][4][1][3]
+connect[1][5][0][5]
+connect[2][0][1][0]
+connect[2][2][1][2]
+connect[2][3][1][3]
+connect[2][4][1][4]
+connect[2][4][2][3]
+connect[2][5][1][5]
+connect[3][0][2][0]
+connect[3][2][2][2]
+connect[3][3][2][3]
+connect[3][4][2][4]
+connect[3][5][2][5]
+connect[4][0][3][0]
+connect[4][1][4][0]
+connect[4][1][4][2]
+connect[4][2][3][2]
+connect[4][3][3][3]
+connect[4][4][4][3]
+connect[4][4][4][5]
+connect[4][5][3][5]
+elapsed_time:64.32754731178284[sec]

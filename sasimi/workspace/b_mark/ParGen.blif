@@ -1,0 +1,24 @@
+.models Parity_Generator
+.input a b c
+.output f
+.names a a1
+NOT
+.names b b1
+NOT
+.names c c1
+NOT
+.names a b1 g1
+AND
+.names a1 b1 g2
+AND
+.names g1 g2 m
+OR
+.names m m1
+NOT
+.names c m1 g3
+AND
+.names c1 m g4
+AND
+.names g3 g4 f
+OR
+.end

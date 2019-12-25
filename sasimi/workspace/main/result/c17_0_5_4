@@ -1,0 +1,90 @@
+circuit name: ISCAS_c17
+primary input list
+--------------------
+a:0 b:1 c:2 d:3 e:4 
+
+int node list
+--------------------
+node name:g1 node id:7 
+gatetype : AND
+input : a:0 b:1 
+output : node_to_x:10 
+
+node name:g2 node id:8 
+gatetype : AND
+input : b:1 d:3 
+output : g4:9 g5:11 
+
+node name:g4 node id:9 
+gatetype : AND
+input : g2:8 c:2 
+output : node_to_x:10 node_to_y:12 
+
+node name:node_to_x node id:10 
+gatetype : AND
+input : g4:9 g1:7 
+output : x:5 
+
+node name:g5 node id:11 
+gatetype : AND
+input : g2:8 e:4 
+output : node_to_y:12 
+
+node name:node_to_y node id:12 
+gatetype : AND
+input : g5:11 g4:9 
+output : y:6 
+
+primary output list
+--------------------
+x:5 y:6 
+
+z3ちゃんは考え中です
+oprater
+ [*]  [*]  [*]  [7]  [0] 
+ [5]  [10]  [*]  [1]  [*] 
+ [*]  [2]  [9]  [8]  [3] 
+ [*]  [6]  [12]  [11]  [4] 
+
+wire
+ [*:*]  [7:10]  [7:10]  [*:*]  [*:*] 
+ [*:*]  [*:*]  [9:10]  [*:*]  [*:*] 
+ [*:*]  [*:*]  [*:*]  [*:*]  [*:*] 
+ [*:*]  [*:*]  [*:*]  [*:*]  [*:*] 
+
+connect
+[ ] [ ]<[ ]<[ ]<[ ]
+     V       A      
+[ ]<[ ]<[ ] [ ] [ ]
+         A   V      
+[ ] [ ]>[ ]<[ ]<[ ]
+         V   V      
+[ ] [ ]<[ ]<[ ]<[ ]
+                    
+
+clock_zone
+ [4]  [1]  [4]  [3]  [2] 
+ [3]  [2]  [1]  [2]  [3] 
+ [2]  [3]  [4]  [3]  [2] 
+ [4]  [2]  [1]  [4]  [3] 
+
+
+connnect list
+connect[1][0][1][1]
+connect[1][1][0][1]
+connect[1][2][2][2]
+connect[2][0][1][0]
+connect[2][1][1][1]
+connect[2][2][2][1]
+connect[2][2][2][3]
+connect[2][3][1][3]
+connect[3][0][2][0]
+connect[3][1][3][0]
+connect[3][1][3][2]
+connect[3][2][2][2]
+connect[3][2][3][3]
+connect[3][3][2][3]
+connect[4][0][3][0]
+connect[4][2][3][2]
+connect[4][3][3][3]
+elapsed_time:13.404777526855469[sec]

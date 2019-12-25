@@ -1,0 +1,18 @@
+.model ISCAS_c17
+.input a b c d e
+.output x y
+.names a b g1
+AND
+.names b c g2
+AND
+.names g2 g3
+NOT
+.names g3 d g4
+AND
+.names g4 g2 x
+AND
+.names d e g5
+OR
+.names g5 g3 y
+AND
+.end

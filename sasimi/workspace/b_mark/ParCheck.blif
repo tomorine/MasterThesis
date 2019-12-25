@@ -1,0 +1,34 @@
+.models Parity_Checker
+.input a b c p
+.output f
+.names a a1
+NOT
+.names b b1
+NOT
+.names c c1
+NOT
+.names p p1
+NOT
+.names a1 b g1
+AND
+.names a b1 g2
+AND
+.names c p1 g3
+AND
+.names c1 p g4
+AND
+.names g1 g2 m
+OR
+.names g3 g4 n
+OR
+.names m m1
+NOT
+.names n n1
+NOT
+.names m1 n g5
+AND
+.names m n1 g6
+AND
+.names g5 g6 f
+OR
+.end
