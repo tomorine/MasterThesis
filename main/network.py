@@ -5,6 +5,9 @@ import re
 import random
 import numpy as np
 import sys
+import operator
+from functools import cmp_to_key
+# 以下自作ファイルのインポー卜
 import sub_network
 
 # ネットワーククラス
@@ -79,6 +82,7 @@ class CreateNode:
         self.clstr = [-1]
         self.depth = -1
         self.height = -1
+        self.effect_node = -1
 
     # ノードの入力の追加
     def add_input(self, node):
@@ -206,15 +210,47 @@ def calc_height(node):
 
 # 初期の高さを計算（暫定）
 def calc_height_init(circ):
-    max = 0
-    for node in circ.p_output:
-        if max < node.depth:
-            max = node.depth
+    up_nodelist = sorted(circ.p_input, key=cmp_to_key(effect_num_cmp))
+    tmp_nodelist = list()
+    frg = 0
+    for node in up_nodelist:
+        if frg == 0:
+            tmp_nodelist.append(node)
+            frg = 1
+        elif frg == 1:
+            tmp_nodelist.insert(0, node)
+            frg = 0
+    max = sorted(circ.p_output, key=cmp_to_key(depth_cmp))[0].depth
     unit = max/len(circ.p_input) # 単位あたりの高さを計算（深さに対して）
-    # for i in circ.p_input: 
     for i in range(1, len(circ.p_input)+1):
-        circ.p_input[i-1].height = float(i*unit)
-            
+        tmp_nodelist[i-1].height = float(i*unit)
+
+# 降順比較メソッド（ノードのアウトプットの数）
+def effect_num_cmp(node1, node2):
+    a = calc_effect_node_num(node2)
+    b = calc_effect_node_num(node1)
+    if a == b: return 0 
+    if a < b: return -1
+    return 1
+
+# 降順比較メソッド（ノードの高さ）
+def depth_cmp(node1, node2):
+    a = node2.depth
+    b = node1.depth
+    if a == b: return 0 
+    if a < b: return -1
+    return 1
+
+# 特定のノードが影響を及ぼすノードの個数を計算
+def calc_effect_node_num(node):
+    if node.effect_node != -1: return node.effect_node
+    if node.type == "output": return 0
+    sum = 0
+    for tmp in node.output:
+        sum += calc_effect_node_num(tmp) + 1
+    node.effect_node = sum
+    return sum
+
 # k-means本体
 def calc_kmeans(circ, k):
     node_list = circ.intnode + circ.p_output + circ.p_input
@@ -236,7 +272,6 @@ def calc_kmeans(circ, k):
             min_distance = 10000000 # とてつもなく大きい数字
             for i in range(k):
                 distance = ((gp_list[i][0]-node.depth)**2 + (gp_list[i][1]-node.height)**2)**(1/2)
-                #print("gp[%d] = (%.2f %.2f)" % (i+1, gp_list[i][0], gp_list[i][1]))
                 if distance < min_distance:
                     min_distance = distance
                     node.clstr[circ.depth] = i+1
@@ -254,11 +289,8 @@ def calc_kmeans(circ, k):
 # 初期クラスタの設定（k-means++）
 def init_clstr(circ, k):
     node_list = circ.intnode + circ.p_output + circ.p_input
-    print("number of circ node = ", len(node_list))
     first_node = random.choice(node_list)
     first_node.clstr[circ.depth] = 1
-    print("1 clstr node is %s" % first_node.name)
-    print(print_node(first_node, 0))
     clstr_list = list()
     clstr_list.append(first_node)
     for i in range(2, k+1):
@@ -279,10 +311,7 @@ def init_clstr(circ, k):
             values.append(k)
         for k in candidates.values():
             weights.append(k)
-        #print(candidates)
         chosen_node = random.choices(values, weights = weights)[0]
-        print("%d cluster node is %s" % (i, circ.find_node(chosen_node).name))
-        #print(print_node(circ.find_node(chosen_node), 0))
         circ.find_node(chosen_node).clstr[circ.depth] = i
         clstr_list.append(circ.find_node(chosen_node))
               
@@ -301,7 +330,6 @@ def calc_gp(circ, clstr):
     if len(clstr_list) != 0:
         ans.append(sum_depth/len(clstr_list))
         ans.append(sum_height/len(clstr_list))
-        print("cluster[%d]'s gp = (%.2f %.2f)" % (clstr, sum_depth/len(clstr_list), sum_height/len(clstr_list)))
     else:
         ans.append(-1111111)
         ans.append(-1111111)

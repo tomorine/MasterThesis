@@ -19,7 +19,7 @@ if __name__ == '__main__':
     calc_cood(circ)
     calc_kmeans(circ, 3)
     print_node_all(circ)
-    print("---------\n---------\n---------\n---------\n")
-    sub_circ = MakeSubNetwork(circ, 2)
-    calc_kmeans(sub_circ, 2)
+    #print("---------\n---------\n---------\n---------\n")
+    #sub_circ = MakeSubNetwork(circ, 2)
+    #calc_kmeans(sub_circ, 2)
     
