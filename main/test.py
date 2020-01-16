@@ -1,8 +1,18 @@
 import re 
 
-x = 3
-y = 4
+x = [[-1] * 3] * 4 
+x = [[-1 for i in range(3)] for j in range(4)]
 
-z = (x**2+y**2)**(1/2)
+print(x)
+for j in range(3):
+    for i in range(4):
+        print(x[i][j], end='')
+    print()
+print()
 
-print(z)
+x[1][2] = 2
+    
+for j in range(3):
+    for i in range(4):
+        print(x[i][j], end='')
+    print()

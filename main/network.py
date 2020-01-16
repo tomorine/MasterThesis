@@ -8,7 +8,7 @@ import sys
 import operator
 from functools import cmp_to_key
 # 以下自作ファイルのインポー卜
-import sub_network
+# import sub_network
 
 # ネットワーククラス
 class CreateNetwork:
@@ -19,11 +19,12 @@ class CreateNetwork:
         self.p_output = list()
         self.max_depth = 0 # 回路の中のゲートが持つ最大のdepth
         self.depth = 0
+        self.global_node_num = 0
         
     # 中間ノードの追加
     def add_intnode(self, node):
         frg = 0
-        for tmp in self.intnode:
+        for tmp in self.intnode + self.p_input + self.p_output:
             if tmp == node:
                 frg = 1
         if frg == 0:
@@ -35,42 +36,44 @@ class CreateNetwork:
     # 外部入力の追加
     def add_input(self, node):
         frg = 0
-        for tmp in self.p_input:
+        for tmp in self.intnode + self.p_input + self.p_output:
             if tmp == node:
                 frg = 1
         if frg == 0:
             self.p_input.append(node)
             node.depth = 0
-            node.type = "input"
+            node.type = "p_input"
             return
         print("error: already exist %s" % node.name)
 
     # 外部出力の追加
     def add_output(self, node):
         frg = 0
-        for tmp in self.p_output:
+        for tmp in self.intnode + self.p_input + self.p_output:
             if tmp == node:
                 frg = 1
         if frg == 0:
             self.p_output.append(node)
-            node.type = "output"
+            node.type = "p_output"
             return
         print("error: already exist %s" % node.name)
             
     # ノードを名前で探す
     def find_node(self, name):
-        for tmp in self.intnode:
+        nodelist = self.intnode + self.p_input + self.p_output
+        for tmp in nodelist:
             if tmp.name == name:
                 return (tmp)
-        for tmp in self.p_input:
-            if tmp.name == name:
-                return (tmp)
-        for tmp in self.p_output:
-            if tmp.name == name:
-                return (tmp)
-        # print("error: no exist %s" % name)
         return(-1) # 存在しない場合は-1を返す
 
+    # ノードをIDで探す
+    def find_node_id(self, id):
+        nodelist = self.intnode + self.p_input + self.p_output
+        for tmp in nodelist:
+            if tmp.id == id:
+                return(tmp)
+        return(-1) # 存在しない場合は-1を返す
+        
 # ノードクラス
 class CreateNode:
     def __init__(self, name):
@@ -79,10 +82,11 @@ class CreateNode:
         self.input = list()
         self.output = list()
         #self.clstr = -1
-        self.clstr = [-1]
+        self.clstr = -1
         self.depth = -1
         self.height = -1
         self.effect_node = -1
+        self.id = -1
 
     # ノードの入力の追加
     def add_input(self, node):
@@ -93,8 +97,8 @@ class CreateNode:
         self.output.append(node)
 
     # ノードのクラスタ（いらないかも）
-    def define_cluster(self, clstr, dep):
-        self.clstr[dep] = clstr
+    def define_cluster(self, clstr):
+        self.clstr = clstr
         
 
 # ファイルから回路情報を読み取ってネットワークを作成する関数
@@ -144,12 +148,18 @@ class MakeNetwork:
                             main_node.add_input(circ.find_node(tmp))
                             circ.find_node(tmp).add_output(main_node)
         f.close()
+        # ネットワークのすべてのノードにIDをつける
+        nodelist = circ.intnode + circ.p_input + circ.p_output
+        circ.global_node_num = len(nodelist)
+        for i in range(1, len(nodelist) + 1):
+            nodelist[i-1].id = i
         return circ
                         
 # ノードの情報を表示
 def print_node(node, dep):
     print("node: %s (%d. %.1f)" % (node.name, node.depth, node.height)) # 第２位以下切捨表示
-    print("cluster = %d" % (node.clstr[dep]))
+    print("cluster = %d" % (node.clstr))
+    print("id = %d" % node.id)
     if len(node.input) != 0:
         print("input = ", end ='')
         for tmp in node.input:
@@ -196,7 +206,7 @@ def calc_depth(node):
     for tmp in node.input:
         depth = max(depth, tmp.depth)
     node.depth = depth +1
-    if node.type == "output":
+    if node.type == "p_output" or node.type == "output":
         return
     for tmp in node.output:
         calc_depth(tmp)
@@ -244,7 +254,7 @@ def depth_cmp(node1, node2):
 # 特定のノードが影響を及ぼすノードの個数を計算
 def calc_effect_node_num(node):
     if node.effect_node != -1: return node.effect_node
-    if node.type == "output": return 0
+    if node.type == "output" or node.type == "p_output": return 0
     sum = 0
     for tmp in node.output:
         sum += calc_effect_node_num(tmp) + 1
@@ -274,7 +284,7 @@ def calc_kmeans(circ, k):
                 distance = ((gp_list[i][0]-node.depth)**2 + (gp_list[i][1]-node.height)**2)**(1/2)
                 if distance < min_distance:
                     min_distance = distance
-                    node.clstr[circ.depth] = i+1
+                    node.clstr = i+1
         for i in range(len(gp_list_p)):
             if gp_list[i][0] != gp_list_p[i][0] or gp_list[i][1] != gp_list_p[i][1]:
                 frg = 1
@@ -290,7 +300,7 @@ def calc_kmeans(circ, k):
 def init_clstr(circ, k):
     node_list = circ.intnode + circ.p_output + circ.p_input
     first_node = random.choice(node_list)
-    first_node.clstr[circ.depth] = 1
+    first_node.clstr = 1
     clstr_list = list()
     clstr_list.append(first_node)
     for i in range(2, k+1):
@@ -303,7 +313,7 @@ def init_clstr(circ, k):
                 distance = ((node.depth-comp.depth)**2 + (node.height-comp.height)**2)
                 if distance < min:
                     min = distance
-            if node.clstr[circ.depth] == -1:
+            if node.clstr == -1:
                 candidates[node.name] = min
         #values = candidates.keys() これ無理なのpythonのミスでしょ
         #weights = candidates.values()
@@ -312,7 +322,7 @@ def init_clstr(circ, k):
         for k in candidates.values():
             weights.append(k)
         chosen_node = random.choices(values, weights = weights)[0]
-        circ.find_node(chosen_node).clstr[circ.depth] = i
+        circ.find_node(chosen_node).clstr = i
         clstr_list.append(circ.find_node(chosen_node))
               
 # 特定のクラスタの重心を計算
@@ -322,7 +332,7 @@ def calc_gp(circ, clstr):
     sum_height = 0
     node_list = circ.intnode + circ.p_output + circ.p_input
     for node in node_list:
-        if node.clstr[circ.depth] == clstr:
+        if node.clstr == clstr:
             clstr_list.append(node)
             sum_depth += node.depth
             sum_height += node.height
@@ -341,20 +351,5 @@ def print_node_clstr(circ, k):
     for i in range(1, k+1):
         print("cluster %d list:" % i)
         for node in node_list:
-            if node.clstr[circ.depth] == i:
+            if node.clstr == i:
                 print(node.name)
-
-# main関数（network.pyを実行した時に処理される部分）
-if __name__ == '__main__':
-    # コマンドラインからファイルを引数で取得
-    argv = sys.argv
-    argc = len(argv)
-    if argc!=2:
-        # print ("Usage: python3 ",argv[0]," filename circuit_wide circuit_high")
-        print ("Usage: python3 ",argv[0])
-        quit()
-    str = argv[1]
-    circ = MakeNetwork.verilog(str)
-    calc_cood(circ)
-    calc_kmeans(circ, 3)
-    print_node_all(circ)
