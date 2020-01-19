@@ -5,6 +5,7 @@ from network import *
 from sub_network import *
 from collections import defaultdict
 from smt_minimum import *
+from smt_synthesis import *
 import sys
 
 if __name__ == '__main__':
@@ -26,16 +27,19 @@ if __name__ == '__main__':
         #print("\n\n")
         sub_circ.append(MakeSubNetwork(circ, i))
     print_node_all(sub_circ[0])
+    subc_list = list()
     for i in range(1,6):
         for j in range(1,6):
             tmp = do_smt_minimum(sub_circ[0], i, j)
             print("%d:%d" % (i, j))
             if tmp != "unsat":
+                subc_list.append(tmp)
                 for ir in range(j):
                     for jr in range(i):
                         print("[%d]" % tmp[jr][ir], end='')
                     print()
                 print()
+                do_smt_synthesis(sub_circ[0], subc_list, 5, 5)
                 break
     """
     check = list()

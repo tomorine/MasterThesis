@@ -1,18 +1,17 @@
-import re 
+from z3 import *
 
-x = [[-1] * 3] * 4 
-x = [[-1 for i in range(3)] for j in range(4)]
+x = 1
 
-print(x)
-for j in range(3):
-    for i in range(4):
-        print(x[i][j], end='')
-    print()
-print()
+y = Int("y")
+z = Int("z")
 
-x[1][2] = 2
-    
-for j in range(3):
-    for i in range(4):
-        print(x[i][j], end='')
-    print()
+s = Solver()
+
+s.add(If(x == 1, y == 1, y ==0))
+x = 0
+s.add(If(x == 1, z == 1, z ==0))
+
+s.check()
+model = s.model()
+print(model[y].as_long())
+print(model[z].as_long())
