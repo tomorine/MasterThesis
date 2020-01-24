@@ -1,6 +1,7 @@
 # tomorow@ngc.is.ritsumei.ac.jp
 # writing by python3
 # coding:utf-8
+# todo：instanceとかいうくそわかりにくい変数名を変える
 from z3 import *
 import network
 import sub_network
@@ -312,11 +313,11 @@ def do_smt_minimum(circ, wd, hi):
                 search_length(source, target, tmplist)
                 tmplistlist.append(tmplist)
             solve.add(Sum([tmp for tmp in tmplistlist[0]]) == Sum([tmp for tmp in tmplistlist[1]]))
+    """
     # 制約：inputとoutputのノードが一番外側に来る
     for node in nodelist:
         id = node.id
         if node.type == "input" or node.type == "output":
-        # if node.type == "p_input" or node.type == "p_output":
             outermost = list()
             if hi >= 2:
                 for i in range(wd):
@@ -328,8 +329,33 @@ def do_smt_minimum(circ, wd, hi):
                     outermost.append(op[id][wd-1][j])
             if len(outermost) >= 2:
                 solve.add(Sum([tmp for tmp in outermost]) == 1)
+    """
+    # 制約：inputとoutputのノードが一番外側に来る（各位置固定）
+    for node in nodelist:
+        id = node.id
+        if node.type == "input":
+            outermost = list()
+            if hi >= 2:
+                for i in range(wd):
+                    outermost.append(op[id][i][0])
+            if wd >= 2:
+                for j in range(1, hi-1):
+                    outermost.append(op[id][0][j])
+            if len(outermost) >= 2:
+                solve.add(Sum([tmp for tmp in outermost]) == 1)
+        if node.type == "output":
+            outermost = list()
+            if hi >= 2:
+                for i in range(wd):
+                    outermost.append(op[id][i][hi-1])
+            if wd >= 2:
+                for j in range(1, hi-1):
+                    outermost.append(op[id][wd-1][j])
+            if len(outermost) >= 2:
+                solve.add(Sum([tmp for tmp in outermost]) == 1)
+            
     # print model or
-    print("z3ちゃんは考え中です")
+    # print("z3ちゃんは考え中です")
     reason = solve.check()
     if reason == sat:
         model = solve.model()
@@ -351,9 +377,7 @@ def do_smt_minimum(circ, wd, hi):
         print("QCA circuit [%s] size is %d:%d" % (circ.name, wd, hi))
         return circ_form
     elif reason == unsat:
-        print(reason)
         return("unsat")
-        
     """
     if reason == sat:
         model = solve.model()
@@ -412,4 +436,4 @@ def do_smt_minimum(circ, wd, hi):
         print()
     else:
         print(reason)
-"""
+    """

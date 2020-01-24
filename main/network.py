@@ -148,13 +148,38 @@ class MakeNetwork:
                             main_node.add_input(circ.find_node(tmp))
                             circ.find_node(tmp).add_output(main_node)
         f.close()
+        # 入出力合わせて4つ以上のノードを分解する
+        for i in range(len(circ.intnode)):
+            if len(circ.intnode[i].input + circ.intnode[i].output) >= 4:
+                output_decompostion(circ, circ.intnode[i] , 0)
+            if circ.intnode[i].name[0] == '~' and len(circ.intnode[i].output) >= 2:
+                output_decompostion(circ, circ.intnode[i], 0)
         # ネットワークのすべてのノードにIDをつける
         nodelist = circ.intnode + circ.p_input + circ.p_output
         circ.global_node_num = len(nodelist)
         for i in range(1, len(nodelist) + 1):
             nodelist[i-1].id = i
         return circ
-                        
+
+# 入出力を調整するための再帰関数
+def output_decompostion(circ, node, num):
+    if len(node.output) <= 1:
+        return
+    tmp_output1 = node.output.pop()
+    tmp_output2 = node.output.pop()
+    tmp_node = CreateNode(node.name + ":" + str(num))
+    tmp_node.add_input(node)
+    tmp_node.add_output(tmp_output1)
+    tmp_node.add_output(tmp_output2)
+    tmp_output1.input.remove(node)
+    tmp_output2.input.remove(node)
+    tmp_output1.add_input(tmp_node)
+    tmp_output2.add_input(tmp_node)
+    circ.add_intnode(tmp_node)
+    node.add_output(tmp_node)
+    output_decompostion(circ, node, num+1)
+    return
+
 # ノードの情報を表示
 def print_node(node, dep):
     print("node: %s (%d. %.1f)" % (node.name, node.depth, node.height)) # 第２位以下切捨表示
